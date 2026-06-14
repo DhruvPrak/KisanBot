@@ -7,6 +7,9 @@ function Footer() {
       <p className="text-xs text-green-300 mt-1">
         Always verify advice with a licensed agricultural expert.
       </p>
+      <p className="text-xs text-green-400 mt-1">
+        Built with ❤️ for Kedarnath Valley farmers | TBI-GEU SIP 2026
+      </p>
     </footer>
   );
 }
