@@ -4,7 +4,7 @@ import Hero from '../components/Hero';
 import Card from '../components/Card';
 import Footer from '../components/Footer';
 
-function Home() {
+function Home({ darkMode, setDarkMode }) {
   const features = [
     {
       icon: '🌱',
@@ -29,11 +29,11 @@ function Home() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
+    <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900 transition-colors duration-300">
+      <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
       <Hero />
-      <div className="px-6 py-12 bg-white">
-        <h2 className="text-2xl font-bold text-green-800 text-center mb-8">
+      <div className="px-6 py-12 bg-white dark:bg-gray-900">
+        <h2 className="text-2xl font-bold text-green-800 dark:text-green-300 text-center mb-8">
           What KisanBot Can Help You With
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
