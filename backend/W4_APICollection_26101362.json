@@ -1,0 +1,108 @@
+{
+  "info": {
+    "name": "KisanBot API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GET All Queries",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:5000/api/queries"
+      },
+      "response": [
+        {
+          "name": "GET All Queries - Example",
+          "status": "OK",
+          "code": 200,
+          "body": "{\"success\":true,\"data\":[{\"id\":1,\"crop\":\"Beans\",\"problem\":\"Yellow spots on leaves\",\"advice\":\"Could be fungal infection. Remove affected leaves.\",\"createdAt\":\"2026-06-28T11:48:30.931Z\"},{\"id\":2,\"crop\":\"Tomato\",\"problem\":\"Pest attack on stems\",\"advice\":\"Apply neem oil spray every 3 days.\",\"createdAt\":\"2026-06-28T11:48:30.931Z\"},{\"id\":3,\"crop\":\"Potato\",\"problem\":\"Leaves turning brown\",\"advice\":\"Possible blight. Reduce watering and apply fungicide.\",\"createdAt\":\"2026-06-28T11:48:30.931Z\"}]}"
+        }
+      ]
+    },
+    {
+      "name": "GET Single Query",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:5000/api/queries/1"
+      },
+      "response": [
+        {
+          "name": "GET Single Query - Example",
+          "status": "OK",
+          "code": 200,
+          "body": "{\"success\":true,\"data\":{\"id\":1,\"crop\":\"Beans\",\"problem\":\"Yellow spots on leaves\",\"advice\":\"Could be fungal infection. Remove affected leaves.\",\"createdAt\":\"2026-06-28T11:48:30.931Z\"}}"
+        }
+      ]
+    },
+    {
+      "name": "POST Create Query",
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:5000/api/queries",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"crop\":\"Wheat\",\"problem\":\"Dry leaves at tips\",\"advice\":\"Could be water stress. Increase irrigation frequency.\"}"
+        }
+      },
+      "response": [
+        {
+          "name": "POST Create Query - Example",
+          "status": "Created",
+          "code": 201,
+          "body": "{\"success\":true,\"data\":{\"id\":4,\"crop\":\"Wheat\",\"problem\":\"Dry leaves at tips\",\"advice\":\"Could be water stress. Increase irrigation frequency.\",\"createdAt\":\"2026-06-28T12:00:00.000Z\"}}"
+        }
+      ]
+    },
+    {
+      "name": "PUT Update Query",
+      "request": {
+        "method": "PUT",
+        "url": "http://localhost:5000/api/queries/1",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"advice\":\"Updated: Apply copper fungicide and remove affected leaves immediately.\"}"
+        }
+      },
+      "response": [
+        {
+          "name": "PUT Update Query - Example",
+          "status": "OK",
+          "code": 200,
+          "body": "{\"success\":true,\"data\":{\"id\":1,\"crop\":\"Beans\",\"problem\":\"Yellow spots on leaves\",\"advice\":\"Updated: Apply copper fungicide and remove affected leaves immediately.\",\"createdAt\":\"2026-06-28T11:48:30.931Z\"}}"
+        }
+      ]
+    },
+    {
+      "name": "DELETE Query",
+      "request": {
+        "method": "DELETE",
+        "url": "http://localhost:5000/api/queries/1"
+      },
+      "response": [
+        {
+          "name": "DELETE Query - Example",
+          "status": "No Content",
+          "code": 204,
+          "body": ""
+        }
+      ]
+    },
+    {
+      "name": "GET Search Queries",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:5000/api/queries/search?q=tomato"
+      },
+      "response": [
+        {
+          "name": "GET Search Queries - Example",
+          "status": "OK",
+          "code": 200,
+          "body": "{\"success\":true,\"data\":[{\"id\":2,\"crop\":\"Tomato\",\"problem\":\"Pest attack on stems\",\"advice\":\"Apply neem oil spray every 3 days.\",\"createdAt\":\"2026-06-28T11:48:30.931Z\"}]}"
+        }
+      ]
+    }
+  ]
+}
