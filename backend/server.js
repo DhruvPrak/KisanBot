@@ -1,6 +1,12 @@
+require('dns').setDefaultResultOrder('ipv4first');
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
+
+const connectDB = require('./config/db');
+connectDB();
+
+const Query = require('./models/Query');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -9,61 +15,77 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// In-memory data store
-let queries = [
-  { id: 1, crop: 'Beans', problem: 'Yellow spots on leaves', advice: 'Could be fungal infection. Remove affected leaves.', createdAt: new Date() },
-  { id: 2, crop: 'Tomato', problem: 'Pest attack on stems', advice: 'Apply neem oil spray every 3 days.', createdAt: new Date() },
-  { id: 3, crop: 'Potato', problem: 'Leaves turning brown', advice: 'Possible blight. Reduce watering and apply fungicide.', createdAt: new Date() },
-];
-let nextId = 4;
+// GET search queries (moved above /:id so it doesn't get swallowed)
+app.get('/api/queries/search', async (req, res) => {
+  try {
+    const q = req.query.q?.toLowerCase() || '';
+    const results = await Query.find({
+      $or: [
+        { crop: { $regex: q, $options: 'i' } },
+        { problem: { $regex: q, $options: 'i' } }
+      ]
+    });
+    res.status(200).json({ success: true, data: results });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
 
 // GET all queries
-app.get('/api/queries', (req, res) => {
-  res.status(200).json({ success: true, data: queries });
+app.get('/api/queries', async (req, res) => {
+  try {
+    const queries = await Query.find().sort({ createdAt: -1 });
+    res.status(200).json({ success: true, data: queries });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
 });
 
 // GET single query
-app.get('/api/queries/:id', (req, res) => {
-  const query = queries.find(q => q.id === parseInt(req.params.id));
-  if (!query) return res.status(404).json({ success: false, message: 'Query not found' });
-  res.status(200).json({ success: true, data: query });
+app.get('/api/queries/:id', async (req, res) => {
+  try {
+    const query = await Query.findById(req.params.id);
+    if (!query) return res.status(404).json({ success: false, message: 'Query not found' });
+    res.status(200).json({ success: true, data: query });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
 });
 
 // POST create new query
-app.post('/api/queries', (req, res) => {
-  const { crop, problem, advice } = req.body;
-  if (!crop || !problem) {
-    return res.status(400).json({ success: false, message: 'Crop and problem are required' });
+app.post('/api/queries', async (req, res) => {
+  try {
+    const { crop, problem, advice } = req.body;
+    if (!crop || !problem) {
+      return res.status(400).json({ success: false, message: 'Crop and problem are required' });
+    }
+    const newQuery = await Query.create({ crop, problem, advice: advice || '' });
+    res.status(201).json({ success: true, data: newQuery });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
   }
-  const newQuery = { id: nextId++, crop, problem, advice: advice || '', createdAt: new Date() };
-  queries.push(newQuery);
-  res.status(201).json({ success: true, data: newQuery });
 });
 
 // PUT update query
-app.put('/api/queries/:id', (req, res) => {
-  const index = queries.findIndex(q => q.id === parseInt(req.params.id));
-  if (index === -1) return res.status(404).json({ success: false, message: 'Query not found' });
-  queries[index] = { ...queries[index], ...req.body };
-  res.status(200).json({ success: true, data: queries[index] });
+app.put('/api/queries/:id', async (req, res) => {
+  try {
+    const updated = await Query.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    if (!updated) return res.status(404).json({ success: false, message: 'Query not found' });
+    res.status(200).json({ success: true, data: updated });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
 });
 
 // DELETE query
-app.delete('/api/queries/:id', (req, res) => {
-  const index = queries.findIndex(q => q.id === parseInt(req.params.id));
-  if (index === -1) return res.status(404).json({ success: false, message: 'Query not found' });
-  queries.splice(index, 1);
-  res.status(204).send();
-});
-
-// GET search queries
-app.get('/api/queries/search', (req, res) => {
-  const q = req.query.q?.toLowerCase() || '';
-  const results = queries.filter(query =>
-    query.crop.toLowerCase().includes(q) ||
-    query.problem.toLowerCase().includes(q)
-  );
-  res.status(200).json({ success: true, data: results });
+app.delete('/api/queries/:id', async (req, res) => {
+  try {
+    const deleted = await Query.findByIdAndDelete(req.params.id);
+    if (!deleted) return res.status(404).json({ success: false, message: 'Query not found' });
+    res.status(204).send();
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
 });
 
 // Error handling middleware
