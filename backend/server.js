@@ -1,3 +1,5 @@
+const authRoutes = require('./routes/authRoutes');
+const requireAuth = require('./middleware/auth');
 require('dns').setDefaultResultOrder('ipv4first');
 const express = require('express');
 const cors = require('cors');
@@ -11,11 +13,10 @@ const Query = require('./models/Query');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
 app.use(cors());
 app.use(express.json());
+app.use('/api/auth', authRoutes);
 
-// GET search queries (moved above /:id so it doesn't get swallowed)
 app.get('/api/queries/search', async (req, res) => {
   try {
     const q = req.query.q?.toLowerCase() || '';
@@ -31,7 +32,6 @@ app.get('/api/queries/search', async (req, res) => {
   }
 });
 
-// GET all queries
 app.get('/api/queries', async (req, res) => {
   try {
     const queries = await Query.find().sort({ createdAt: -1 });
@@ -41,7 +41,6 @@ app.get('/api/queries', async (req, res) => {
   }
 });
 
-// GET single query
 app.get('/api/queries/:id', async (req, res) => {
   try {
     const query = await Query.findById(req.params.id);
@@ -52,8 +51,7 @@ app.get('/api/queries/:id', async (req, res) => {
   }
 });
 
-// POST create new query
-app.post('/api/queries', async (req, res) => {
+app.post('/api/queries', requireAuth, async (req, res) => {
   try {
     const { crop, problem, advice } = req.body;
     if (!crop || !problem) {
@@ -66,8 +64,7 @@ app.post('/api/queries', async (req, res) => {
   }
 });
 
-// PUT update query
-app.put('/api/queries/:id', async (req, res) => {
+app.put('/api/queries/:id', requireAuth, async (req, res) => {
   try {
     const updated = await Query.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
     if (!updated) return res.status(404).json({ success: false, message: 'Query not found' });
@@ -77,8 +74,7 @@ app.put('/api/queries/:id', async (req, res) => {
   }
 });
 
-// DELETE query
-app.delete('/api/queries/:id', async (req, res) => {
+app.delete('/api/queries/:id', requireAuth, async (req, res) => {
   try {
     const deleted = await Query.findByIdAndDelete(req.params.id);
     if (!deleted) return res.status(404).json({ success: false, message: 'Query not found' });
@@ -88,7 +84,6 @@ app.delete('/api/queries/:id', async (req, res) => {
   }
 });
 
-// Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ success: false, message: 'Internal server error' });

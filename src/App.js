@@ -4,7 +4,9 @@ import Home from './pages/Home';
 import About from './pages/About';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import UIDemo from './pages/UIDemo';
+import ProtectedRoute from './ProtectedRoute';
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
@@ -16,9 +18,14 @@ function App() {
           <Routes>
             <Route path="/" element={<Home darkMode={darkMode} setDarkMode={setDarkMode} />} />
             <Route path="/about" element={<About darkMode={darkMode} setDarkMode={setDarkMode} />} />
-            <Route path="/dashboard" element={<Dashboard darkMode={darkMode} setDarkMode={setDarkMode} />} />
             <Route path="/login" element={<Login darkMode={darkMode} setDarkMode={setDarkMode} />} />
+            <Route path="/register" element={<Register darkMode={darkMode} setDarkMode={setDarkMode} />} />
             <Route path="/uidemo" element={<UIDemo darkMode={darkMode} setDarkMode={setDarkMode} />} />
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <Dashboard darkMode={darkMode} setDarkMode={setDarkMode} />
+              </ProtectedRoute>
+            } />
           </Routes>
         </Router>
       </div>
