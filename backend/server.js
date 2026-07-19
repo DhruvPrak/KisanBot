@@ -1,4 +1,5 @@
-const authRoutes = require('./routes/authRoutes');
+const authRoutes = require('./routes/authRoutes')
+const aiRoutes = require('./routes/aiRoutes');
 const requireAuth = require('./middleware/auth');
 require('dns').setDefaultResultOrder('ipv4first');
 const express = require('express');
@@ -16,6 +17,7 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 app.use('/api/auth', authRoutes);
+app.use('/api/ai', aiRoutes);
 
 app.get('/api/queries/search', async (req, res) => {
   try {

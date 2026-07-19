@@ -5,6 +5,7 @@ import { Loader, Toast } from '../components/ui/index';
 
 function Dashboard({ darkMode, setDarkMode }) {
   const [queries, setQueries] = useState([]);
+  const [aiLoading, setAiLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [toastVisible, setToastVisible] = useState(false);
@@ -36,31 +37,61 @@ function Dashboard({ darkMode, setDarkMode }) {
     setTimeout(() => setToastVisible(false), 3000);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      if (editingId) {
-        await fetch(`http://localhost:5000/api/queries/${editingId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(form),
-        });
-        showToast('Query updated!');
-      } else {
-        await fetch('http://localhost:5000/api/queries', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(form),
-        });
-        showToast('Query created!');
-      }
-      setForm({ crop: '', problem: '', advice: '' });
-      setEditingId(null);
-      fetchQueries();
-    } catch (err) {
-      showToast('Something went wrong.');
+  const getAIAdvice = async () => {
+    if (!form.crop || !form.problem) {
+      showToast('Enter crop and problem first.');
+      return;
     }
+    setAiLoading(true);
+    try {
+      const res = await fetch('http://localhost:5000/api/ai/advice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ crop: form.crop, problem: form.problem }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setForm({ ...form, advice: data.advice });
+      } else {
+        showToast(data.message || 'AI advice failed.');
+      }
+    } catch (err) {
+      showToast('Could not reach AI service.');
+    }
+    setAiLoading(false);
   };
+
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    let res;
+    if (editingId) {
+      res = await fetch(`http://localhost:5000/api/queries/${editingId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+    } else {
+      res = await fetch('http://localhost:5000/api/queries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+    }
+
+    if (!res.ok) {
+      showToast(res.status === 401 ? 'You must be logged in to do this.' : 'Something went wrong.');
+      return;
+    }
+
+    showToast(editingId ? 'Query updated!' : 'Query created!');
+    setForm({ crop: '', problem: '', advice: '' });
+    setEditingId(null);
+    fetchQueries();
+  } catch (err) {
+    showToast('Something went wrong.');
+  }
+};
 
   const handleEdit = (query) => {
     setForm({ crop: query.crop, problem: query.problem, advice: query.advice });
@@ -68,14 +99,18 @@ function Dashboard({ darkMode, setDarkMode }) {
   };
 
   const handleDelete = async (id) => {
-    try {
-      await fetch(`http://localhost:5000/api/queries/${id}`, { method: 'DELETE' });
-      showToast('Query deleted!');
-      fetchQueries();
-    } catch (err) {
-      showToast('Delete failed.');
+  try {
+    const res = await fetch(`http://localhost:5000/api/queries/${id}`, { method: 'DELETE' });
+    if (!res.ok) {
+      showToast(res.status === 401 ? 'You must be logged in to delete.' : 'Delete failed.');
+      return;
     }
-  };
+    showToast('Query deleted!');
+    fetchQueries();
+  } catch (err) {
+    showToast('Delete failed.');
+  }
+};
 
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900 transition-colors duration-300">
@@ -103,6 +138,16 @@ function Dashboard({ darkMode, setDarkMode }) {
             onChange={(e) => setForm({ ...form, problem: e.target.value })}
             required
           />
+
+          <button
+            type="button"
+            onClick={getAIAdvice}
+            disabled={aiLoading}
+            className="mb-2 bg-green-100 text-green-800 px-3 py-1 rounded border border-green-400 hover:bg-green-200 disabled:opacity-50"
+          >
+            {aiLoading ? <Loader size="small" /> : '✨ Get AI Advice'}
+          </button>
+
           <input
             className="w-full mb-4 p-2 border rounded dark:bg-gray-700 dark:text-white"
             placeholder="Advice"
