@@ -17,6 +17,8 @@ function Dashboard({ darkMode, setDarkMode }) {
   const [toastMessage, setToastMessage] = useState('');
   const [form, setForm] = useState({ crop: '', problem: '', advice: '' });
   const [editingId, setEditingId] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
+  const [aiGenerated, setAiGenerated] = useState(false);
 
   useEffect(() => {
     fetchQueries();
@@ -56,6 +58,7 @@ function Dashboard({ darkMode, setDarkMode }) {
       return;
     }
     setAiLoading(true);
+    setAiGenerated(false);
     try {
       const res = await fetch('http://localhost:5000/api/ai/advice', {
         method: 'POST',
@@ -65,6 +68,7 @@ function Dashboard({ darkMode, setDarkMode }) {
       const data = await res.json();
       if (data.success) {
         setForm({ ...form, advice: data.advice });
+        setAiGenerated(true);
       } else {
         showToast(data.message || 'AI advice failed.');
       }
@@ -76,6 +80,16 @@ function Dashboard({ darkMode, setDarkMode }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const errors = {};
+    if (!form.crop.trim()) errors.crop = 'Crop name is required.';
+    else if (form.crop.trim().length < 2) errors.crop = 'Crop name must be at least 2 characters.';
+    if (!form.problem.trim()) errors.problem = 'Problem description is required.';
+    else if (form.problem.trim().length < 5) errors.problem = 'Please describe the problem in a bit more detail.';
+
+    setFormErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
     try {
       let res;
       if (editingId) {
@@ -99,6 +113,7 @@ function Dashboard({ darkMode, setDarkMode }) {
 
       showToast(editingId ? 'Query updated!' : 'Query created!');
       setForm({ crop: '', problem: '', advice: '' });
+      setFormErrors({});
       setEditingId(null);
       fetchQueries();
     } catch (err) {
@@ -108,10 +123,15 @@ function Dashboard({ darkMode, setDarkMode }) {
 
   const handleEdit = (query) => {
     setForm({ crop: query.crop, problem: query.problem, advice: query.advice });
+    setFormErrors({});
+    setAiGenerated(false);
     setEditingId(query._id);
   };
 
   const handleDelete = async (id) => {
+    if (!window.confirm('Delete this query? This cannot be undone.')) {
+      return;
+    }
     try {
       const res = await fetch(`http://localhost:5000/api/queries/${id}`, {
         method: 'DELETE',
@@ -140,36 +160,61 @@ function Dashboard({ darkMode, setDarkMode }) {
           <h3 className="font-bold text-green-800 dark:text-green-300 mb-4">
             {editingId ? 'Edit Query' : 'New Crop Query'}
           </h3>
+
           <input
-            className="w-full mb-2 p-2 border rounded dark:bg-gray-700 dark:text-white"
+            className={`w-full mb-1 p-2 border rounded dark:bg-gray-700 dark:text-white ${formErrors.crop ? 'border-red-500' : ''}`}
             placeholder="Crop"
             value={form.crop}
             onChange={(e) => setForm({ ...form, crop: e.target.value })}
-            required
           />
+          {formErrors.crop && <p className="text-red-500 text-sm mb-2">{formErrors.crop}</p>}
+
           <input
-            className="w-full mb-2 p-2 border rounded dark:bg-gray-700 dark:text-white"
+            className={`w-full mb-1 p-2 border rounded dark:bg-gray-700 dark:text-white ${formErrors.problem ? 'border-red-500' : ''}`}
             placeholder="Problem"
             value={form.problem}
             onChange={(e) => setForm({ ...form, problem: e.target.value })}
-            required
           />
+          {formErrors.problem && <p className="text-red-500 text-sm mb-2">{formErrors.problem}</p>}
 
           <button
             type="button"
             onClick={getAIAdvice}
             disabled={aiLoading}
-            className="mb-2 bg-green-100 text-green-800 px-3 py-1 rounded border border-green-400 hover:bg-green-200 disabled:opacity-50"
+            className="mb-3 flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md hover:from-green-600 hover:to-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
           >
-            {aiLoading ? <Loader size="small" /> : '✨ Get AI Advice'}
+            {aiLoading ? (
+              <>
+                <span className="flex gap-1">
+                  <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                  <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                  <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce"></span>
+                </span>
+                Thinking...
+              </>
+            ) : (
+              <>✨ Get AI Advice</>
+            )}
           </button>
 
-          <input
-            className="w-full mb-4 p-2 border rounded dark:bg-gray-700 dark:text-white"
-            placeholder="Advice"
-            value={form.advice}
-            onChange={(e) => setForm({ ...form, advice: e.target.value })}
-          />
+          <div className="mb-4">
+            {aiGenerated && (
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 bg-emerald-100 dark:bg-emerald-900/40 dark:text-emerald-300 px-2 py-0.5 rounded-full mb-1">
+                ✨ AI Generated
+              </span>
+            )}
+            <textarea
+              className={`w-full p-3 border rounded-lg leading-relaxed transition-colors ${
+                aiGenerated
+                  ? 'bg-emerald-50 border-emerald-300 dark:bg-emerald-950/30 dark:border-emerald-700'
+                  : 'dark:bg-gray-700 border-gray-300 dark:border-gray-600'
+              } dark:text-white`}
+              placeholder="Advice will appear here — or type your own"
+              rows={3}
+              value={form.advice}
+              onChange={(e) => { setForm({ ...form, advice: e.target.value }); setAiGenerated(false); }}
+            />
+          </div>
           <button type="submit" className="bg-green-700 text-white px-4 py-2 rounded hover:bg-green-800">
             {editingId ? 'Update' : 'Add Query'}
           </button>
@@ -177,7 +222,7 @@ function Dashboard({ darkMode, setDarkMode }) {
             <button
               type="button"
               className="ml-2 px-4 py-2 rounded border"
-              onClick={() => { setEditingId(null); setForm({ crop: '', problem: '', advice: '' }); }}
+              onClick={() => { setEditingId(null); setForm({ crop: '', problem: '', advice: '' }); setFormErrors({}); setAiGenerated(false); }}
             >
               Cancel
             </button>
@@ -196,7 +241,16 @@ function Dashboard({ darkMode, setDarkMode }) {
           </p>
         )}
 
-        {!loading && !error && (
+        {!loading && !error && queries.length === 0 && (
+          <div className="max-w-4xl mx-auto text-center py-16">
+            <p className="text-5xl mb-4">🌱</p>
+            <p className="text-gray-500 dark:text-gray-400 text-lg">
+              No queries yet — add your first one above!
+            </p>
+          </div>
+        )}
+
+        {!loading && !error && queries.length > 0 && (
           <div className="max-w-4xl mx-auto grid grid-cols-1 gap-4">
             {queries.map((query) => (
               <div key={query._id} className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-green-100 dark:border-gray-700">
