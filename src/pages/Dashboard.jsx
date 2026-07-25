@@ -3,6 +3,11 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Loader, Toast } from '../components/ui/index';
 
+const getAuthHeaders = () => ({
+  'Content-Type': 'application/json',
+  Authorization: `Bearer ${localStorage.getItem('token')}`,
+});
+
 function Dashboard({ darkMode, setDarkMode }) {
   const [queries, setQueries] = useState([]);
   const [aiLoading, setAiLoading] = useState(false);
@@ -20,9 +25,17 @@ function Dashboard({ darkMode, setDarkMode }) {
   const fetchQueries = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5000/api/queries');
+      const response = await fetch('http://localhost:5000/api/queries', {
+        headers: getAuthHeaders(),
+      });
       const data = await response.json();
-      setQueries(data.data);
+      if (!response.ok) {
+        setError(true);
+        setLoading(false);
+        showToast(response.status === 401 ? 'Session expired. Please log in again.' : 'Failed to load queries.');
+        return;
+      }
+      setQueries(data.data || []);
       setLoading(false);
     } catch (err) {
       setError(true);
@@ -62,36 +75,36 @@ function Dashboard({ darkMode, setDarkMode }) {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    let res;
-    if (editingId) {
-      res = await fetch(`http://localhost:5000/api/queries/${editingId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
-    } else {
-      res = await fetch('http://localhost:5000/api/queries', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
-    }
+    e.preventDefault();
+    try {
+      let res;
+      if (editingId) {
+        res = await fetch(`http://localhost:5000/api/queries/${editingId}`, {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+          body: JSON.stringify(form),
+        });
+      } else {
+        res = await fetch('http://localhost:5000/api/queries', {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify(form),
+        });
+      }
 
-    if (!res.ok) {
-      showToast(res.status === 401 ? 'You must be logged in to do this.' : 'Something went wrong.');
-      return;
-    }
+      if (!res.ok) {
+        showToast(res.status === 401 ? 'You must be logged in to do this.' : 'Something went wrong.');
+        return;
+      }
 
-    showToast(editingId ? 'Query updated!' : 'Query created!');
-    setForm({ crop: '', problem: '', advice: '' });
-    setEditingId(null);
-    fetchQueries();
-  } catch (err) {
-    showToast('Something went wrong.');
-  }
-};
+      showToast(editingId ? 'Query updated!' : 'Query created!');
+      setForm({ crop: '', problem: '', advice: '' });
+      setEditingId(null);
+      fetchQueries();
+    } catch (err) {
+      showToast('Something went wrong.');
+    }
+  };
 
   const handleEdit = (query) => {
     setForm({ crop: query.crop, problem: query.problem, advice: query.advice });
@@ -99,18 +112,21 @@ function Dashboard({ darkMode, setDarkMode }) {
   };
 
   const handleDelete = async (id) => {
-  try {
-    const res = await fetch(`http://localhost:5000/api/queries/${id}`, { method: 'DELETE' });
-    if (!res.ok) {
-      showToast(res.status === 401 ? 'You must be logged in to delete.' : 'Delete failed.');
-      return;
+    try {
+      const res = await fetch(`http://localhost:5000/api/queries/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) {
+        showToast(res.status === 401 ? 'You must be logged in to delete.' : 'Delete failed.');
+        return;
+      }
+      showToast('Query deleted!');
+      fetchQueries();
+    } catch (err) {
+      showToast('Delete failed.');
     }
-    showToast('Query deleted!');
-    fetchQueries();
-  } catch (err) {
-    showToast('Delete failed.');
-  }
-};
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900 transition-colors duration-300">
