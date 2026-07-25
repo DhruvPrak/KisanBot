@@ -1,70 +1,42 @@
-# Getting Started with Create React App
+# KisanBot 🌾
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+AI-powered crop advisory web app built for farmers in the Kedarnath Valley, Uttarakhand. Farmers submit a crop and problem, and KisanBot returns practical, AI-generated advice they can act on immediately.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- **Authentication** — JWT-based register/login, protected routes, session persistence
+- **Per-user Crop Queries** — full CRUD (create, read, update, delete), scoped so each farmer only sees their own queries
+- **AI Advice Generation** — powered by Google Gemini; farmers enter a crop and problem and get instant, farmer-friendly advice
+- **Responsive UI** — works cleanly at mobile (375px), tablet (768px), and desktop (1440px), including a collapsible mobile navigation menu
+- **Robust UX** — form validation, delete confirmations, empty states, loading indicators, and a React error boundary so the app never shows a blank crash screen
+- **Dark mode** toggle across the whole app
 
-### `npm start`
+## Tech Stack
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Frontend:** React, React Router, Tailwind CSS
+- **Backend:** Node.js, Express, MongoDB (Mongoose)
+- **AI:** Google Gemini API
+- **Auth:** JWT, bcrypt
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Getting Started
 
-### `npm test`
+### Backend
+```bash
+cd backend
+npm install
+# create a .env file — see .env.example for required variables
+npm run dev
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Frontend
+```bash
+npm install
+npm start
+```
 
-### `npm run build`
+## Environment Variables
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+See `backend/.env.example` for the required variables (`MONGO_URI`, `JWT_SECRET`, `GEMINI_API_KEY`). Never commit your actual `.env` file.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+---
+Built with ❤️ for Kedarnath Valley farmers | TBI-GEU SIP 2026
