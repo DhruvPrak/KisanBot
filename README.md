@@ -1,3 +1,21 @@
+## 🌐 Live App
+
+- **Frontend (Vercel):** https://kisan-bot-six.vercel.app
+- **Backend (Render):** https://kisanbot-mzwe.onrender.com
+
+## 🛠️ Tech Stack
+- Frontend: React JS + Tailwind CSS
+- Backend: Node.js + Express.js
+- Database: MongoDB Atlas + Mongoose
+- AI: Google Gemini API
+- Auth: JWT + bcrypt
+- Deployment: Vercel (frontend) + Render (backend)
+
+## ⚠️ Known Limitations (Free Tier)
+- Render free tier spins down after 15 minutes of inactivity
+- First request after idle takes 30–60 seconds to wake up
+- MongoDB Atlas free tier has 512MB storage limit
+
 # KisanBot 🌾
 
 AI-powered crop advisory web app built for farmers in the Kedarnath Valley, Uttarakhand. Farmers submit a crop and problem, and KisanBot returns practical, AI-generated advice they can act on immediately.
