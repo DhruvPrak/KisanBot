@@ -23,6 +23,7 @@ function Dashboard({ darkMode, setDarkMode }) {
 
   useEffect(() => {
     fetchQueries();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchQueries = async () => {
