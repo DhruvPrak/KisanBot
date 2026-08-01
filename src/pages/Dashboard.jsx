@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Loader, Toast } from '../components/ui/index';
+import { API_URL } from '../config';
 
 const getAuthHeaders = () => ({
   'Content-Type': 'application/json',
@@ -27,7 +28,7 @@ function Dashboard({ darkMode, setDarkMode }) {
   const fetchQueries = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5000/api/queries', {
+      const response = await fetch(`${API_URL}/api/queries`, {
         headers: getAuthHeaders(),
       });
       const data = await response.json();
@@ -60,7 +61,7 @@ function Dashboard({ darkMode, setDarkMode }) {
     setAiLoading(true);
     setAiGenerated(false);
     try {
-      const res = await fetch('http://localhost:5000/api/ai/advice', {
+      const res = await fetch(`${API_URL}/api/ai/advice`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ crop: form.crop, problem: form.problem }),
@@ -93,13 +94,13 @@ function Dashboard({ darkMode, setDarkMode }) {
     try {
       let res;
       if (editingId) {
-        res = await fetch(`http://localhost:5000/api/queries/${editingId}`, {
+        res = await fetch(`${API_URL}/api/queries/${editingId}`, {
           method: 'PUT',
           headers: getAuthHeaders(),
           body: JSON.stringify(form),
         });
       } else {
-        res = await fetch('http://localhost:5000/api/queries', {
+        res = await fetch(`${API_URL}/api/queries`, {
           method: 'POST',
           headers: getAuthHeaders(),
           body: JSON.stringify(form),
@@ -133,7 +134,7 @@ function Dashboard({ darkMode, setDarkMode }) {
       return;
     }
     try {
-      const res = await fetch(`http://localhost:5000/api/queries/${id}`, {
+      const res = await fetch(`${API_URL}/api/queries/${id}`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
       });
